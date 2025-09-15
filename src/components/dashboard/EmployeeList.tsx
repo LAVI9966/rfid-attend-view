@@ -19,48 +19,34 @@ const EmployeeList = () => {
   const [students, setStudents] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Replace this URL with your Google Sheets CSV export URL
-  // Go to Google Sheets > File > Share > Publish to web > CSV format
-  const GOOGLE_SHEETS_CSV_URL = "YOUR_GOOGLE_SHEETS_CSV_URL_HERE";
+  const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTqQoZ7x8QfBiKS_LLk5gGwebfBmKWKAy5mO5DRBfsrkzSfqKRMtXsWMpSCQrTfADKd6hUXKDOy8Ss5/pub?output=csv";
+
+  const parseCSV = (csvText: string): AttendanceRecord[] => {
+    const lines = csvText.trim().split('\n');
+    const headers = lines[0].split(',');
+    
+    return lines.slice(1).map(line => {
+      const values = line.split(',');
+      return {
+        date: values[0]?.trim() || '',
+        studentId: values[1]?.trim() || '',
+        studentName: values[2]?.trim() || '',
+        status: values[3]?.trim() || '',
+        inTime: values[4]?.trim() || '',
+        outTime: values[5]?.trim() || '',
+        remarks: values[6]?.trim() || ''
+      };
+    }).filter(record => record.studentId); // Filter out empty rows
+  };
 
   const fetchAttendanceData = async () => {
     setLoading(true);
     try {
-      // This is where you'll connect to your Google Sheets
-      // For now, using sample data - replace with actual Google Sheets integration
-      
-      // Example of how to fetch from Google Sheets CSV:
-      // const response = await fetch(GOOGLE_SHEETS_CSV_URL);
-      // const csvText = await response.text();
-      // const parsedData = parseCSV(csvText);
-      // setStudents(parsedData);
-
-      // Sample data for demonstration - remove when connecting to Google Sheets
-      setTimeout(() => {
-        const sampleData: AttendanceRecord[] = [
-          {
-            date: new Date().toLocaleDateString(),
-            studentId: "STU001",
-            studentName: "John Smith",
-            status: "Present",
-            inTime: "09:15 AM",
-            outTime: "05:30 PM",
-            remarks: "On time"
-          },
-          {
-            date: new Date().toLocaleDateString(),
-            studentId: "STU002", 
-            studentName: "Sarah Johnson",
-            status: "Present",
-            inTime: "08:45 AM",
-            outTime: "-",
-            remarks: "Still in class"
-          }
-        ];
-        setStudents(sampleData);
-        setLoading(false);
-      }, 1000);
-
+      const response = await fetch(GOOGLE_SHEETS_CSV_URL);
+      const csvText = await response.text();
+      const parsedData = parseCSV(csvText);
+      setStudents(parsedData);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching attendance data:', error);
       setLoading(false);
