@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const StatsCards = () => {
   const stats = [
     {
-      title: "Total Employees",
+      title: "Total Students",
       value: "248",
       change: "+12 this month",
       icon: Users,
