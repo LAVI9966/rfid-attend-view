@@ -151,20 +151,72 @@ const StatsCards = () => {
         const IconComponent = stat.icon;
         
         return (
-          <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+          <Card 
+            key={index} 
+            className="group relative overflow-hidden glass border-0 hover:shadow-xl transition-all duration-500 hover:-translate-y-2 animate-fade-in"
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
+            {/* Gradient background based on stat type */}
+            <div className={`absolute inset-0 opacity-5 ${
+              stat.color.includes('present') ? 'bg-gradient-success' :
+              stat.color.includes('absent') ? 'bg-gradient-danger' :
+              stat.color.includes('late') ? 'bg-gradient-warning' :
+              'bg-gradient-primary'
+            }`} />
+            
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 {stat.title}
               </CardTitle>
-              <div className={`${stat.bgColor} p-2 rounded-lg`}>
-                <IconComponent className={`h-4 w-4 ${stat.color}`} />
+              <div className={`relative p-3 rounded-xl ${stat.bgColor} group-hover:scale-110 transition-transform duration-300`}>
+                <IconComponent className={`h-5 w-5 ${stat.color} group-hover:drop-shadow-lg`} />
+                
+                {/* Glow effect on hover */}
+                <div className={`absolute inset-0 rounded-xl ${
+                  stat.color.includes('present') ? 'group-hover:shadow-success-glow' :
+                  stat.color.includes('absent') ? 'group-hover:shadow-danger-glow' :
+                  stat.color.includes('late') ? 'group-hover:shadow-warning-glow' :
+                  'group-hover:shadow-glow'
+                } transition-shadow duration-300`} />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            
+            <CardContent className="space-y-2">
+              <div className="flex items-baseline space-x-2">
+                <div className="text-3xl font-bold font-inter text-foreground group-hover:scale-105 transition-transform duration-300">
+                  {stat.value}
+                </div>
+                {stat.change.includes('%') && (
+                  <div className={`text-sm font-medium px-2 py-1 rounded-full ${
+                    stat.color.includes('present') ? 'bg-success/10 text-success' :
+                    stat.color.includes('absent') ? 'bg-destructive/10 text-destructive' :
+                    stat.color.includes('late') ? 'bg-warning/10 text-warning' :
+                    'bg-primary/10 text-primary'
+                  }`}>
+                    {stat.change.split(' ')[0]}
+                  </div>
+                )}
+              </div>
+              
+              <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                 {stat.change}
               </p>
+              
+              {/* Animated progress bar */}
+              <div className="h-1 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-1000 rounded-full ${
+                    stat.color.includes('present') ? 'bg-gradient-success' :
+                    stat.color.includes('absent') ? 'bg-gradient-danger' :
+                    stat.color.includes('late') ? 'bg-gradient-warning' :
+                    'bg-gradient-primary'
+                  }`}
+                  style={{ 
+                    width: `${Math.min(parseInt(stat.change.match(/\d+/)?.[0] || '0'), 100)}%`,
+                    animationDelay: `${index * 0.2}s`
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
         );

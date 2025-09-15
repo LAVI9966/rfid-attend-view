@@ -62,80 +62,128 @@ const EmployeeList = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      Present: { className: "bg-present text-present-foreground" },
-      Late: { className: "bg-late text-late-foreground" }, 
-      Absent: { className: "bg-absent text-absent-foreground" }
+      Present: { 
+        className: "bg-gradient-success text-white border-0 shadow-success-glow font-semibold px-3 py-1",
+        icon: "✓"
+      },
+      Late: { 
+        className: "bg-gradient-warning text-white border-0 shadow-warning-glow font-semibold px-3 py-1",
+        icon: "⏰"
+      }, 
+      Absent: { 
+        className: "bg-gradient-danger text-white border-0 shadow-danger-glow font-semibold px-3 py-1",
+        icon: "✕"
+      }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.Present;
     return (
-      <Badge className={config.className}>
+      <Badge className={`${config.className} hover:scale-105 transition-transform duration-200`}>
+        <span className="mr-1">{config.icon}</span>
         {status}
       </Badge>
     );
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="group glass border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-primary/5 to-primary-glow/5">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center space-x-2">
-            <GraduationCap className="w-5 h-5" />
-            <span>Student Attendance</span>
+          <CardTitle className="flex items-center space-x-3 text-xl font-bold">
+            <div className="p-2 bg-gradient-primary rounded-xl shadow-glow">
+              <GraduationCap className="w-6 h-6 text-white" />
+            </div>
+            <span className="bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+              Student Attendance Registry
+            </span>
           </CardTitle>
           <Button
             variant="outline"
             size="sm"
             onClick={fetchAttendanceData}
             disabled={loading}
-            className="flex items-center space-x-2"
+            className="glass border-primary/20 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 group-hover:scale-105"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>{loading ? 'Updating...' : 'Refresh'}</span>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
+            <span className="font-medium">{loading ? 'Syncing...' : 'Refresh'}</span>
           </Button>
         </div>
       </CardHeader>
+      
       <CardContent className="p-0">
         {loading && students.length === 0 ? (
-          <div className="flex items-center justify-center py-8">
-            <RefreshCw className="w-6 h-6 animate-spin mr-2" />
-            <span>Loading attendance data...</span>
+          <div className="flex flex-col items-center justify-center py-16 space-y-4">
+            <div className="relative">
+              <RefreshCw className="w-12 h-12 text-primary animate-spin" />
+              <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-primary/20 animate-pulse" />
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-lg font-semibold text-foreground">Loading attendance data...</p>
+              <p className="text-sm text-muted-foreground">Syncing with Google Sheets</p>
+            </div>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Student ID</TableHead>
-                <TableHead>Student Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>In Time</TableHead>
-                <TableHead>Out Time</TableHead>
-                <TableHead>Remarks</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {students.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    No attendance data found. Make sure your Google Sheets is connected properly.
-                  </TableCell>
+          <div className="overflow-hidden rounded-b-2xl">
+            <Table>
+              <TableHeader className="bg-muted/30">
+                <TableRow className="hover:bg-transparent border-border/50">
+                  <TableHead className="font-semibold text-foreground/80">Date</TableHead>
+                  <TableHead className="font-semibold text-foreground/80">Student ID</TableHead>
+                  <TableHead className="font-semibold text-foreground/80">Student Name</TableHead>
+                  <TableHead className="font-semibold text-foreground/80">Status</TableHead>
+                  <TableHead className="font-semibold text-foreground/80">In Time</TableHead>
+                  <TableHead className="font-semibold text-foreground/80">Out Time</TableHead>
+                  <TableHead className="font-semibold text-foreground/80">Remarks</TableHead>
                 </TableRow>
-              ) : (
-                students.map((student, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{student.date}</TableCell>
-                    <TableCell>{student.studentId}</TableCell>
-                    <TableCell>{student.studentName}</TableCell>
-                    <TableCell>{getStatusBadge(student.status)}</TableCell>
-                    <TableCell>{student.inTime}</TableCell>
-                    <TableCell>{student.outTime}</TableCell>
-                    <TableCell className="text-muted-foreground">{student.remarks}</TableCell>
+              </TableHeader>
+              <TableBody>
+                {students.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-16">
+                      <div className="space-y-4">
+                        <div className="w-20 h-20 mx-auto bg-muted/20 rounded-full flex items-center justify-center">
+                          <GraduationCap className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-lg font-medium text-foreground">No attendance records found</p>
+                          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                            Make sure your Google Sheets is properly connected and contains valid data.
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  students.map((student, index) => (
+                    <TableRow 
+                      key={index} 
+                      className="hover:bg-muted/10 transition-all duration-200 border-border/30 group"
+                    >
+                      <TableCell className="font-medium text-foreground/90 group-hover:text-foreground">
+                        {student.date}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm text-muted-foreground group-hover:text-foreground/80">
+                        {student.studentId}
+                      </TableCell>
+                      <TableCell className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {student.studentName}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(student.status)}</TableCell>
+                      <TableCell className="font-mono text-sm text-muted-foreground">
+                        {student.inTime || '-'}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm text-muted-foreground">
+                        {student.outTime || '-'}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground group-hover:text-foreground/80 text-sm">
+                        {student.remarks || '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>
