@@ -53,10 +53,10 @@ const EmployeeList = () => {
     }
   };
 
-  // Auto-refresh every 30 seconds for real-time updates
+  // Auto-refresh every 5 seconds for real-time updates
   useEffect(() => {
     fetchAttendanceData();
-    const interval = setInterval(fetchAttendanceData, 30000);
+    const interval = setInterval(fetchAttendanceData, 5000);
     return () => clearInterval(interval);
   }, []);
 

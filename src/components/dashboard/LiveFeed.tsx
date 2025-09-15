@@ -132,7 +132,7 @@ const LiveFeed = () => {
         <div className="p-4 bg-gradient-to-r from-muted/10 to-muted/5 border-t border-border/30">
           <div className="flex items-center justify-center space-x-2 text-xs text-muted-foreground">
             <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-            <span className="font-medium">Live feed • Updates every 30 seconds</span>
+            <span className="font-medium">Live feed • Updates every 5 seconds</span>
           </div>
         </div>
       </CardContent>

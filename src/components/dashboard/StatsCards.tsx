@@ -140,8 +140,8 @@ const StatsCards = () => {
 
   useEffect(() => {
     fetchAndCalculateStats();
-    // Refresh stats every 30 seconds to match the attendance list refresh
-    const interval = setInterval(fetchAndCalculateStats, 30000);
+    // Refresh stats every 5 seconds to match the attendance list refresh
+    const interval = setInterval(fetchAndCalculateStats, 5000);
     return () => clearInterval(interval);
   }, []);
 
