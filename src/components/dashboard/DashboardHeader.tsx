@@ -1,6 +1,11 @@
-import { Clock, Users, Calendar, Activity } from "lucide-react";
+import { Clock, Users, Calendar, Activity, Plus } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import UpdateSheetModal from "./UpdateSheetModal";
 
 const DashboardHeader = () => {
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -12,6 +17,11 @@ const DashboardHeader = () => {
     hour: '2-digit',
     minute: '2-digit'
   });
+
+  const handleSheetUpdate = () => {
+    // This will trigger refresh of attendance data after modal saves
+    window.location.reload(); // Simple refresh for now
+  };
 
   return (
     <header className="relative overflow-hidden border-b border-border/50 backdrop-blur-xl">
@@ -48,6 +58,15 @@ const DashboardHeader = () => {
             </div>
             
             <div className="flex items-center space-x-6">
+              {/* Update Button */}
+              <Button
+                onClick={() => setIsUpdateModalOpen(true)}
+                className="bg-gradient-primary text-white hover:opacity-90 shadow-glow transition-all duration-300 hover:scale-105"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Update Sheet
+              </Button>
+              
               <div className="relative">
                 <div className="bg-gradient-success p-4 rounded-2xl shadow-success-glow animate-glow">
                   <div className="flex items-center space-x-3">
@@ -66,6 +85,13 @@ const DashboardHeader = () => {
           </div>
         </div>
       </div>
+
+      {/* Update Sheet Modal */}
+      <UpdateSheetModal
+        open={isUpdateModalOpen}
+        onOpenChange={setIsUpdateModalOpen}
+        onUpdate={handleSheetUpdate}
+      />
     </header>
   );
 };

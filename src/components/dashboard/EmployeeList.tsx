@@ -133,13 +133,12 @@ const EmployeeList = () => {
                   <TableHead className="font-semibold text-foreground/80">Status</TableHead>
                   <TableHead className="font-semibold text-foreground/80">In Time</TableHead>
                   <TableHead className="font-semibold text-foreground/80">Out Time</TableHead>
-                  <TableHead className="font-semibold text-foreground/80">Remarks</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {students.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-16">
+                    <TableCell colSpan={6} className="text-center py-16">
                       <div className="space-y-4">
                         <div className="w-20 h-20 mx-auto bg-muted/20 rounded-full flex items-center justify-center">
                           <GraduationCap className="w-8 h-8 text-muted-foreground" />
@@ -174,9 +173,6 @@ const EmployeeList = () => {
                       </TableCell>
                       <TableCell className="font-mono text-sm text-muted-foreground">
                         {student.outTime || '-'}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground group-hover:text-foreground/80 text-sm">
-                        {student.remarks || '-'}
                       </TableCell>
                     </TableRow>
                   ))
