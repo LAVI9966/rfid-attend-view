@@ -12,7 +12,11 @@ interface AttendanceRecord {
   remarks: string;
 }
 
-const StatsCards = () => {
+interface StatsCardsProps {
+  googleSheetsUrl: string;
+}
+
+const StatsCards = ({ googleSheetsUrl }: StatsCardsProps) => {
   const [stats, setStats] = useState([
     {
       title: "Total Students",
@@ -47,8 +51,6 @@ const StatsCards = () => {
       bgColor: "bg-late/10"
     }
   ]);
-
-  const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTqQoZ7x8QfBiKS_LLk5gGwebfBmKWKAy5mO5DRBfsrkzSfqKRMtXsWMpSCQrTfADKd6hUXKDOy8Ss5/pub?output=csv";
 
   const parseCSV = (csvText: string): AttendanceRecord[] => {
     const lines = csvText.trim().split('\n');
@@ -128,7 +130,7 @@ const StatsCards = () => {
 
   const fetchAndCalculateStats = async () => {
     try {
-      const response = await fetch(GOOGLE_SHEETS_CSV_URL);
+      const response = await fetch(googleSheetsUrl);
       const csvText = await response.text();
       const records = parseCSV(csvText);
       const newStats = calculateStats(records);
@@ -143,7 +145,7 @@ const StatsCards = () => {
     // Refresh stats every 5 seconds to match the attendance list refresh
     const interval = setInterval(fetchAndCalculateStats, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [googleSheetsUrl]); // Add googleSheetsUrl as dependency
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

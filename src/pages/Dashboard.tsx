@@ -2,23 +2,29 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import StatsCards from "@/components/dashboard/StatsCards";
 import EmployeeList from "@/components/dashboard/EmployeeList";
 import LiveFeed from "@/components/dashboard/LiveFeed";
+import { useState } from "react";
 
 const Dashboard = () => {
+  const [googleSheetsUrl, setGoogleSheetsUrl] = useState("https://docs.google.com/spreadsheets/d/e/2PACX-1vTqQoZ7x8QfBiKS_LLk5gGwebfBmKWKAy5mO5DRBfsrkzSfqKRMtXsWMpSCQrTfADKd6hUXKDOy8Ss5/pub?output=csv");
+
   return (
     <div className="min-h-screen animated-bg">
-      <DashboardHeader />
+      <DashboardHeader 
+        currentSheetUrl={googleSheetsUrl}
+        onSheetUrlChange={setGoogleSheetsUrl}
+      />
       
       <main className="max-w-7xl mx-auto p-6 space-y-8">
         {/* Statistics Cards with staggered animation */}
         <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <StatsCards />
+          <StatsCards googleSheetsUrl={googleSheetsUrl} />
         </div>
 
         {/* Main Content Grid with glass morphism */}
         <div className="grid gap-8 lg:grid-cols-3 animate-fade-in" style={{ animationDelay: '0.4s' }}>
           {/* Employee List - Takes 2 columns on large screens */}
           <div className="lg:col-span-2">
-            <EmployeeList />
+            <EmployeeList googleSheetsUrl={googleSheetsUrl} />
           </div>
           
           {/* Live Activity Feed - Takes 1 column on large screens */}

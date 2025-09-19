@@ -15,11 +15,13 @@ interface AttendanceRecord {
   remarks: string;
 }
 
-const EmployeeList = () => {
+interface EmployeeListProps {
+  googleSheetsUrl: string;
+}
+
+const EmployeeList = ({ googleSheetsUrl }: EmployeeListProps) => {
   const [students, setStudents] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTqQoZ7x8QfBiKS_LLk5gGwebfBmKWKAy5mO5DRBfsrkzSfqKRMtXsWMpSCQrTfADKd6hUXKDOy8Ss5/pub?output=csv";
 
   const parseCSV = (csvText: string): AttendanceRecord[] => {
     const lines = csvText.trim().split('\n');
@@ -42,7 +44,7 @@ const EmployeeList = () => {
   const fetchAttendanceData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(GOOGLE_SHEETS_CSV_URL);
+      const response = await fetch(googleSheetsUrl);
       const csvText = await response.text();
       const parsedData = parseCSV(csvText);
       setStudents(parsedData);
@@ -58,7 +60,7 @@ const EmployeeList = () => {
     fetchAttendanceData();
     const interval = setInterval(fetchAttendanceData, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [googleSheetsUrl]); // Add googleSheetsUrl as dependency
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {

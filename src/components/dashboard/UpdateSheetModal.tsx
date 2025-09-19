@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
+import { CalendarIcon, Plus, Trash2, Link, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "@/components/ui/separator";
 
 interface AttendanceRecord {
   date: string;
@@ -20,10 +21,13 @@ interface UpdateSheetModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: () => void;
+  currentSheetUrl: string;
+  onSheetUrlChange: (newUrl: string) => void;
 }
 
-const UpdateSheetModal = ({ open, onOpenChange, onUpdate }: UpdateSheetModalProps) => {
+const UpdateSheetModal = ({ open, onOpenChange, onUpdate, currentSheetUrl, onSheetUrlChange }: UpdateSheetModalProps) => {
   const { toast } = useToast();
+  const [sheetUrl, setSheetUrl] = useState(currentSheetUrl);
   const [records, setRecords] = useState<AttendanceRecord[]>([{
     date: new Date().toISOString().split('T')[0],
     studentId: '',
@@ -33,6 +37,11 @@ const UpdateSheetModal = ({ open, onOpenChange, onUpdate }: UpdateSheetModalProp
     outTime: ''
   }]);
   const [isLoading, setIsLoading] = useState(false);
+  const [urlUpdateLoading, setUrlUpdateLoading] = useState(false);
+
+  useEffect(() => {
+    setSheetUrl(currentSheetUrl);
+  }, [currentSheetUrl]);
 
   const addNewRecord = () => {
     setRecords([...records, {
@@ -55,6 +64,35 @@ const UpdateSheetModal = ({ open, onOpenChange, onUpdate }: UpdateSheetModalProp
     const updatedRecords = [...records];
     updatedRecords[index] = { ...updatedRecords[index], [field]: value };
     setRecords(updatedRecords);
+  };
+
+  const handleUpdateSheetUrl = async () => {
+    if (!sheetUrl.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid Google Sheets URL.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUrlUpdateLoading(true);
+    try {
+      onSheetUrlChange(sheetUrl);
+      toast({
+        title: "Success",
+        description: "Google Sheets URL updated successfully!",
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update sheet URL. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setUrlUpdateLoading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -120,13 +158,55 @@ const UpdateSheetModal = ({ open, onOpenChange, onUpdate }: UpdateSheetModalProp
               <CalendarIcon className="w-5 h-5 text-white" />
             </div>
             <span className="bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-              Update Attendance Sheet
+              Manage Attendance Sheet
             </span>
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {records.map((record, index) => (
+          {/* Google Sheets URL Configuration */}
+          <div className="p-4 glass rounded-xl border border-primary/20 space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-gradient-primary rounded-lg shadow-glow">
+                <Link className="w-4 h-4 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">Google Sheets Configuration</h3>
+            </div>
+            
+            <div className="space-y-3">
+              <Label htmlFor="sheet-url">Google Sheets CSV URL</Label>
+              <div className="flex space-x-2">
+                <Input
+                  id="sheet-url"
+                  placeholder="https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?output=csv"
+                  value={sheetUrl}
+                  onChange={(e) => setSheetUrl(e.target.value)}
+                  className="glass border-border/20 flex-1"
+                />
+                <Button
+                  onClick={handleUpdateSheetUrl}
+                  disabled={urlUpdateLoading}
+                  className="bg-gradient-success text-white hover:opacity-90 shadow-success-glow"
+                >
+                  <Save className="w-4 h-4 mr-1" />
+                  {urlUpdateLoading ? "Saving..." : "Update"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Make sure your Google Sheet is published to the web with CSV output format.
+              </p>
+            </div>
+          </div>
+
+          <Separator className="bg-border/30" />
+
+          {/* Add Records Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground flex items-center space-x-2">
+              <Plus className="w-5 h-5 text-primary" />
+              <span>Add New Records</span>
+            </h3>
+            {records.map((record, index) => (
             <div key={index} className="p-4 glass rounded-xl border border-border/20 space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold text-foreground/80">Record {index + 1}</h4>
@@ -213,17 +293,18 @@ const UpdateSheetModal = ({ open, onOpenChange, onUpdate }: UpdateSheetModalProp
                 </div>
               </div>
             </div>
-          ))}
+            ))}
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={addNewRecord}
-            className="w-full glass border-primary/20 hover:bg-primary/10 hover:border-primary/40"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Another Record
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addNewRecord}
+              className="w-full glass border-primary/20 hover:bg-primary/10 hover:border-primary/40"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Another Record
+            </Button>
+          </div>
         </div>
 
         <DialogFooter className="flex flex-col sm:flex-row gap-3">

@@ -3,7 +3,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import UpdateSheetModal from "./UpdateSheetModal";
 
-const DashboardHeader = () => {
+interface DashboardHeaderProps {
+  currentSheetUrl: string;
+  onSheetUrlChange: (newUrl: string) => void;
+}
+
+const DashboardHeader = ({ currentSheetUrl, onSheetUrlChange }: DashboardHeaderProps) => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -91,6 +96,8 @@ const DashboardHeader = () => {
         open={isUpdateModalOpen}
         onOpenChange={setIsUpdateModalOpen}
         onUpdate={handleSheetUpdate}
+        currentSheetUrl={currentSheetUrl}
+        onSheetUrlChange={onSheetUrlChange}
       />
     </header>
   );
