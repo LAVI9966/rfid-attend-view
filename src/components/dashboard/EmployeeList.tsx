@@ -103,7 +103,7 @@ const EmployeeList = () => {
                 Student Attendance Registry
               </span>
             </CardTitle>
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={fetchAttendanceData}
@@ -112,7 +112,7 @@ const EmployeeList = () => {
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
               <span className="font-medium">{loading ? 'Syncing...' : 'Refresh'}</span>
-            </Button>
+            </Button> */}
           </div>
         </CardHeader>
 
