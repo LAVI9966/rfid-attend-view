@@ -111,7 +111,7 @@ const StatsCards = () => {
   const fetchAndCalculateStats = async () => {
     try {
       // Update backend URL to use the new endpoint
-      const response = await axios.get<AttendanceRecord[]>("https://rfid-backend-q0hl.onrender.com/attendance");
+      const response = await axios.get<AttendanceRecord[]>("http://localhost:3000 /attendance");
       const records = response.data;
       const newStats = calculateStats(records);
       setStats(newStats);

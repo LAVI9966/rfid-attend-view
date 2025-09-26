@@ -10,9 +10,9 @@ const Dashboard = () => {
 
       <main className="max-w-7xl mx-auto p-6 space-y-8">
         {/* Statistics Cards with staggered animation */}
-        <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+        {/* <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
           <StatsCards />
-        </div>
+        </div> */}
 
         {/* Main Content Grid with glass morphism */}
         <div className="grid gap-8 lg:grid-cols-3 animate-fade-in" style={{ animationDelay: '0.4s' }}>
