@@ -5,8 +5,6 @@ import { GraduationCap, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 interface AttendanceRecord {
   date: string;
@@ -52,13 +50,6 @@ const EmployeeList = () => {
     setStudents(prevStudents => {
       const updatedStudents = prevStudents.map(student => {
         if (student.studentId === updatedRecord.studentId) {
-          if (updatedRecord.outTime) {
-            toast.success(`${updatedRecord.studentName} logged out at ${updatedRecord.outTime}`);
-          } else if (updatedRecord.inTime) {
-            toast.info(`${updatedRecord.studentName} logged in at ${updatedRecord.inTime}`);
-          } else {
-            toast.warning(`${updatedRecord.studentName} has already logged out today`);
-          }
           return { ...student, ...updatedRecord };
         }
         return student;
@@ -213,7 +204,6 @@ const EmployeeList = () => {
           )}
         </CardContent>
       </Card>
-      <ToastContainer />
     </>
   );
 };
