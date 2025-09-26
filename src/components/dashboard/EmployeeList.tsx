@@ -58,21 +58,6 @@ const EmployeeList = () => {
     });
   };
 
-  // Simulate a real-time update for testing
-  useEffect(() => {
-    const simulateUpdate = async () => {
-      try {
-        // const response = await axios.post<{ data: AttendanceRecord }>("http://localhost:3000/rfid", { tagId: "13A32D31" });
-        const response = await axios.post<{ data: AttendanceRecord }>("https://rfid-backend-q0hl.onrender.com/rfid", { tagId: "13A32D31" });
-        handleRfidUpdate(response.data.data);
-      } catch (error) {
-        console.error("Error simulating RFID update:", error);
-      }
-    };
-
-    simulateUpdate();
-  }, []);
-
   // Auto-refresh every 5 seconds for real-time updates
   useEffect(() => {
     fetchAttendanceData();
