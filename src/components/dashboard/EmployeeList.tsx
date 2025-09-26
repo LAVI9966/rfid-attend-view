@@ -25,8 +25,9 @@ const EmployeeList = () => {
   const fetchAttendanceData = async () => {
     setLoading(true);
     try {
-      const studentsResponse = await axios.get<AttendanceRecord[]>("http://localhost:3000/students");
-      const attendanceResponse = await axios.get<AttendanceRecord[]>("http://localhost:3000/attendance");
+      // Update backend URL to use the new endpoint
+      const studentsResponse = await axios.get<AttendanceRecord[]>("https://rfid-backend-q0hl.onrender.com/students");
+      const attendanceResponse = await axios.get<AttendanceRecord[]>("https://rfid-backend-q0hl.onrender.com/attendance");
 
       // Merge attendance data into students
       const updatedStudents = studentsResponse.data.map(student => {
