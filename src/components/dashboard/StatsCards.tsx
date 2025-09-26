@@ -1,6 +1,7 @@
 import { Users, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect } from "react";
+import axios from "axios";
 
 interface AttendanceRecord {
   date: string;
@@ -12,11 +13,7 @@ interface AttendanceRecord {
   remarks: string;
 }
 
-interface StatsCardsProps {
-  googleSheetsUrl: string;
-}
-
-const StatsCards = ({ googleSheetsUrl }: StatsCardsProps) => {
+const StatsCards = () => {
   const [stats, setStats] = useState([
     {
       title: "Total Students",
@@ -52,31 +49,14 @@ const StatsCards = ({ googleSheetsUrl }: StatsCardsProps) => {
     }
   ]);
 
-  const parseCSV = (csvText: string): AttendanceRecord[] => {
-    const lines = csvText.trim().split('\n');
-    
-    return lines.slice(1).map(line => {
-      const values = line.split(',');
-      return {
-        date: values[0]?.trim() || '',
-        studentId: values[1]?.trim() || '',
-        studentName: values[2]?.trim() || '',
-        status: values[3]?.trim() || '',
-        inTime: values[4]?.trim() || '',
-        outTime: values[5]?.trim() || '',
-        remarks: values[6]?.trim() || ''
-      };
-    }).filter(record => record.studentId);
-  };
-
   const calculateStats = (records: AttendanceRecord[]) => {
     const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format
     const todayRecords = records.filter(record => record.date === today);
-    
+
     // If no records for today, use the latest available date
     let relevantRecords = todayRecords;
     if (todayRecords.length === 0 && records.length > 0) {
-      const latestDate = records.reduce((latest, record) => 
+      const latestDate = records.reduce((latest, record) =>
         record.date > latest ? record.date : latest, records[0].date);
       relevantRecords = records.filter(record => record.date === latestDate);
     }
@@ -84,9 +64,9 @@ const StatsCards = ({ googleSheetsUrl }: StatsCardsProps) => {
     const uniqueStudents = new Set(records.map(record => record.studentId)).size;
     const presentToday = relevantRecords.filter(record => record.status === 'Present').length;
     const absentToday = relevantRecords.filter(record => record.status === 'Absent').length;
-    const lateToday = relevantRecords.filter(record => 
+    const lateToday = relevantRecords.filter(record =>
       record.status === 'Present' && record.remarks?.toLowerCase().includes('late')).length;
-    
+
     const totalToday = presentToday + absentToday;
     const attendanceRate = totalToday > 0 ? Math.round((presentToday / totalToday) * 100) : 0;
     const absentRate = totalToday > 0 ? Math.round((absentToday / totalToday) * 100) : 0;
@@ -130,9 +110,8 @@ const StatsCards = ({ googleSheetsUrl }: StatsCardsProps) => {
 
   const fetchAndCalculateStats = async () => {
     try {
-      const response = await fetch(googleSheetsUrl);
-      const csvText = await response.text();
-      const records = parseCSV(csvText);
+      const response = await axios.get<AttendanceRecord[]>("http://localhost:3000/attendance");
+      const records = response.data;
       const newStats = calculateStats(records);
       setStats(newStats);
     } catch (error) {
@@ -145,85 +124,31 @@ const StatsCards = ({ googleSheetsUrl }: StatsCardsProps) => {
     // Refresh stats every 5 seconds to match the attendance list refresh
     const interval = setInterval(fetchAndCalculateStats, 5000);
     return () => clearInterval(interval);
-  }, [googleSheetsUrl]); // Add googleSheetsUrl as dependency
+  }, []);
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat, index) => {
-        const IconComponent = stat.icon;
-        
-        return (
-          <Card 
-            key={index} 
-            className="group relative overflow-hidden glass border-0 hover:shadow-xl transition-all duration-500 hover:-translate-y-2 animate-fade-in"
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            {/* Gradient background based on stat type */}
-            <div className={`absolute inset-0 opacity-5 ${
-              stat.color.includes('present') ? 'bg-gradient-success' :
-              stat.color.includes('absent') ? 'bg-gradient-danger' :
-              stat.color.includes('late') ? 'bg-gradient-warning' :
-              'bg-gradient-primary'
-            }`} />
-            
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                {stat.title}
-              </CardTitle>
-              <div className={`relative p-3 rounded-xl ${stat.bgColor} group-hover:scale-110 transition-transform duration-300`}>
-                <IconComponent className={`h-5 w-5 ${stat.color} group-hover:drop-shadow-lg`} />
-                
-                {/* Glow effect on hover */}
-                <div className={`absolute inset-0 rounded-xl ${
-                  stat.color.includes('present') ? 'group-hover:shadow-success-glow' :
-                  stat.color.includes('absent') ? 'group-hover:shadow-danger-glow' :
-                  stat.color.includes('late') ? 'group-hover:shadow-warning-glow' :
-                  'group-hover:shadow-glow'
-                } transition-shadow duration-300`} />
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-2">
-              <div className="flex items-baseline space-x-2">
-                <div className="text-3xl font-bold font-inter text-foreground group-hover:scale-105 transition-transform duration-300">
-                  {stat.value}
-                </div>
-                {stat.change.includes('%') && (
-                  <div className={`text-sm font-medium px-2 py-1 rounded-full ${
-                    stat.color.includes('present') ? 'bg-success/10 text-success' :
-                    stat.color.includes('absent') ? 'bg-destructive/10 text-destructive' :
-                    stat.color.includes('late') ? 'bg-warning/10 text-warning' :
-                    'bg-primary/10 text-primary'
-                  }`}>
-                    {stat.change.split(' ')[0]}
-                  </div>
-                )}
-              </div>
-              
-              <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                {stat.change}
-              </p>
-              
-              {/* Animated progress bar */}
-              <div className="h-1 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-1000 rounded-full ${
-                    stat.color.includes('present') ? 'bg-gradient-success' :
-                    stat.color.includes('absent') ? 'bg-gradient-danger' :
-                    stat.color.includes('late') ? 'bg-gradient-warning' :
-                    'bg-gradient-primary'
-                  }`}
-                  style={{ 
-                    width: `${Math.min(parseInt(stat.change.match(/\d+/)?.[0] || '0'), 100)}%`,
-                    animationDelay: `${index * 0.2}s`
-                  }}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+    <Card className="group glass border border-border/30 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/20">
+        <CardTitle className="flex items-center space-x-3 text-lg font-semibold">
+          <div className="p-2 bg-primary rounded-lg shadow">
+            <Users className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-primary">Attendance Statistics</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 flex space-x-4 justify-between">
+        {stats.map((stat, index) => (
+          <div key={index} className={`flex flex-col items-center justify-between p-4 rounded-lg ${stat.bgColor} shadow-md hover:shadow-lg transition-all duration-300 w-1/4`}>
+            <stat.icon className={`w-6 h-6 ${stat.color}`} />
+            <div className="text-center mt-2">
+              <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+              <p className="text-lg font-bold text-foreground">{stat.value}</p>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 };
 

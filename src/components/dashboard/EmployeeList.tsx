@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { GraduationCap, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import axios from "axios";
 
 interface AttendanceRecord {
   date: string;
@@ -13,44 +14,30 @@ interface AttendanceRecord {
   inTime: string;
   outTime: string;
   remarks: string;
+  timestamp: string; // Added timestamp field
 }
 
-interface EmployeeListProps {
-  googleSheetsUrl: string;
-}
-
-const EmployeeList = ({ googleSheetsUrl }: EmployeeListProps) => {
+const EmployeeList = () => {
   const [students, setStudents] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const parseCSV = (csvText: string): AttendanceRecord[] => {
-    const lines = csvText.trim().split('\n');
-    const headers = lines[0].split(',');
-    
-    return lines.slice(1).map(line => {
-      const values = line.split(',');
-      return {
-        date: values[0]?.trim() || '',
-        studentId: values[1]?.trim() || '',
-        studentName: values[2]?.trim() || '',
-        status: values[3]?.trim() || '',
-        inTime: values[4]?.trim() || '',
-        outTime: values[5]?.trim() || '',
-        remarks: values[6]?.trim() || ''
-      };
-    }).filter(record => record.studentId); // Filter out empty rows
-  };
-
+  // Update fetchAttendanceData to fetch students and update dynamically
   const fetchAttendanceData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(googleSheetsUrl);
-      const csvText = await response.text();
-      const parsedData = parseCSV(csvText);
-      setStudents(parsedData);
+      const studentsResponse = await axios.get<AttendanceRecord[]>("http://localhost:3000/students");
+      const attendanceResponse = await axios.get<AttendanceRecord[]>("http://localhost:3000/attendance");
+
+      // Merge attendance data into students
+      const updatedStudents = studentsResponse.data.map(student => {
+        const attendanceRecord = attendanceResponse.data.find(record => record.studentId === student.studentId);
+        return attendanceRecord ? { ...student, ...attendanceRecord } : student;
+      });
+
+      setStudents(updatedStudents);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching attendance data:', error);
+      console.error("Error fetching attendance data:", error);
       setLoading(false);
     }
   };
@@ -58,26 +45,26 @@ const EmployeeList = ({ googleSheetsUrl }: EmployeeListProps) => {
   // Auto-refresh every 5 seconds for real-time updates
   useEffect(() => {
     fetchAttendanceData();
-    const interval = setInterval(fetchAttendanceData, 5000);
+    const interval = setInterval(fetchAttendanceData, 1000);
     return () => clearInterval(interval);
-  }, [googleSheetsUrl]); // Add googleSheetsUrl as dependency
+  }, []); // Removed googleSheetsUrl dependency
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      Present: { 
+      Present: {
         className: "bg-gradient-success text-white border-0 shadow-success-glow font-semibold px-3 py-1",
         icon: "✓"
       },
-      Late: { 
+      Late: {
         className: "bg-gradient-warning text-white border-0 shadow-warning-glow font-semibold px-3 py-1",
         icon: "⏰"
-      }, 
-      Absent: { 
+      },
+      Absent: {
         className: "bg-gradient-danger text-white border-0 shadow-danger-glow font-semibold px-3 py-1",
         icon: "✕"
       }
     };
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.Present;
     return (
       <Badge className={`${config.className} hover:scale-105 transition-transform duration-200`}>
@@ -111,7 +98,7 @@ const EmployeeList = ({ googleSheetsUrl }: EmployeeListProps) => {
           </Button>
         </div>
       </CardHeader>
-      
+
       <CardContent className="p-0">
         {loading && students.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 space-y-4">
@@ -121,7 +108,7 @@ const EmployeeList = ({ googleSheetsUrl }: EmployeeListProps) => {
             </div>
             <div className="text-center space-y-2">
               <p className="text-lg font-semibold text-foreground">Loading attendance data...</p>
-              <p className="text-sm text-muted-foreground">Syncing with Google Sheets</p>
+              <p className="text-sm text-muted-foreground">Syncing with backend</p>
             </div>
           </div>
         ) : (
@@ -148,7 +135,7 @@ const EmployeeList = ({ googleSheetsUrl }: EmployeeListProps) => {
                         <div className="space-y-2">
                           <p className="text-lg font-medium text-foreground">No attendance records found</p>
                           <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                            Make sure your Google Sheets is properly connected and contains valid data.
+                            Make sure your backend is properly connected and contains valid data.
                           </p>
                         </div>
                       </div>
@@ -156,12 +143,12 @@ const EmployeeList = ({ googleSheetsUrl }: EmployeeListProps) => {
                   </TableRow>
                 ) : (
                   students.map((student, index) => (
-                    <TableRow 
-                      key={index} 
+                    <TableRow
+                      key={index}
                       className="hover:bg-muted/10 transition-all duration-200 border-border/30 group"
                     >
                       <TableCell className="font-medium text-foreground/90 group-hover:text-foreground">
-                        {student.date}
+                        {new Date(student.timestamp).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="font-mono text-sm text-muted-foreground group-hover:text-foreground/80">
                         {student.studentId}
